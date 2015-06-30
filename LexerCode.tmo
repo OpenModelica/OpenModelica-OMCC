@@ -15,10 +15,6 @@ encapsulated package %LexerCode% "Automatically generated lexer based on flex, g
 
 import System;
 
-import arrayGet = MetaModelica.Dangerous.arrayGetNoBoundsChecking; // Bounds checked with debug=true
-import stringGet = MetaModelica.Dangerous.stringGetNoBoundsChecking;
-import MetaModelica.Dangerous.listReverseInPlace;
-
 constant Boolean debug = false;
 
 replaceable package LexTable
@@ -134,6 +130,8 @@ protected
   list<String> chars;
   array<Integer> states;
   String s1,s2;
+  import MetaModelica.Dangerous.listReverseInPlace;
+  import stringGet = MetaModelica.Dangerous.stringGetNoBoundsChecking;
 algorithm
   // load arrays
 
@@ -310,6 +308,8 @@ protected
   array<Integer> mm_accept,mm_ec,mm_meta,mm_base,mm_def,mm_nxt,mm_chk,mm_acclist;
   Integer lp,lp1,stCmp;
   Boolean st;
+  import arrayGet = MetaModelica.Dangerous.arrayGetNoBoundsChecking; // Bounds checked with debug=true
+  import stringGet = MetaModelica.Dangerous.stringGetNoBoundsChecking;
 algorithm
   mm_currSt := currSt;
   mm_pos := pos;

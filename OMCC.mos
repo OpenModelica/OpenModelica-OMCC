@@ -1,5 +1,10 @@
 OpenModelica.Scripting.setCFlags("-g " + getCFlags());getErrorString();
-compilerSources := "../../../OMCompiler/Compiler/";
+if regexBool(cd(), "/OMCompiler/Compiler/") then
+  (_, matches) := regex(cd(), "^.*/OMCompiler/Compiler/");
+  compilerSources := matches[1];
+else
+  compilerSources := "../../../OMCompiler/Compiler/";
+end if;
 files := {
   "OMCC.mo",
   compilerSources + "/Util/List.mo",

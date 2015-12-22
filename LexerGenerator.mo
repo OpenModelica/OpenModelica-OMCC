@@ -141,7 +141,7 @@ print(intString(i) + " is token " + tokenName + "\n");
     posBegin := System.stringFind(rest,"BEGIN");
     posKeepBuffer := System.stringFind(rest,"keepBuffer");
     //print("\n pos:" + intString(pos) + ":" + "pos2:" + intString(pos2) + ":" + "posB:" + intString(posBegin) );
-    resTable := "\n      equation" :: resTable;
+    resTable := "\n      algorithm" :: resTable;
     if (posBegin>=0) then // starts BEGIN switch start state
       // find token
       pos := System.stringFind(rest,"(");
@@ -153,7 +153,7 @@ print(intString(i) + " is token " + tokenName + "\n");
       if (debug==true) then
          print("\n BEGIN at" + intString(valBegin));
       end if;
-      cp := "\n        mm_startSt = " + intString(valBegin) +";";
+      cp := "\n        mm_startSt := " + intString(valBegin) +";";
       resTable := cp::resTable;
     end if;
 
@@ -162,15 +162,23 @@ print(intString(i) + " is token " + tokenName + "\n");
       if (debug==true) then
          print("\n keepbuffer");
       end if;
-      cp := "\n        bufferRet = buffer;";
+      cp := "\n        bufferRet := buffer;";
       resTable := cp::resTable;
     end if;
 
    if tokenName <> "" then
-     cp := "\n        tok = TOKEN(\"";
+     cp := "\n        tok := TOKEN(fileNm,TokenId.";
      resTable := tokenName::cp::resTable;
      cp := ",fileContents,mm_pos-buffer,buffer,lineNrStart,mm_ePos+1,mm_linenr,mm_sPos+1);\n      then tok;\n";
-     resTable := cp::tokenName::"\",TokenId."::resTable;
+     resTable := cp::resTable;
+   elseif i==numRules then
+     //print("NONE");
+     cp := "\n        tok := TOKEN(fileNm,TokenId._NO_TOKEN,fileContents,mm_pos-buffer,buffer,lineNrStart,mm_ePos+1,mm_linenr,mm_sPos+1);";
+     resTable := cp::resTable;
+     cp := "\n        errorTokens := tok :: errorTokens;";
+     resTable := cp::resTable;
+     cp := "\n      then noToken;\n";
+     resTable := cp::resTable;
    else
      //print("NONE");
      cp := "\n      then noToken;\n";

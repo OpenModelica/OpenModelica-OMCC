@@ -33,18 +33,20 @@ end LexTable;
 function scan "Scan starts the lexical analysis, load the tables and consume the program to output the tokens"
   input String fileName "input source code file";
   output list<Token> tokens "return list of tokens";
+  output list<Token> errorTokens;
 protected
   String contents;
 algorithm
   contents := System.readFile(fileName);
-  tokens := lex(fileName,contents);
+  (tokens, errorTokens) := lex(fileName,contents);
 end scan;
 
 function scanString "Scan starts the lexical analysis, load the tables and consume the program to output the tokens"
   input String fileSource "input source code file";
   output list<Token> tokens "return list of tokens";
+  output list<Token> errorTokens;
 algorithm
-  tokens := lex("<StringSource>",fileSource);
+  (tokens, errorTokens) := lex("<StringSource>",fileSource);
 end scanString;
 
 %prologue%
@@ -56,9 +58,11 @@ function action
   input Boolean debug;
   input String fileNm;
   input String fileContents;
+  input list<Token> inErrorTokens;
   output Token token;
   output Integer mm_startSt;
   output Integer bufferRet;
+  output list<Token> errorTokens=inErrorTokens;
 protected
   SourceInfo info;
   String sToken;
@@ -71,9 +75,9 @@ algorithm
       Token tok;
 %caseAction%
     else
-      equation
+      algorithm
         print("\nLexer unknown rule, action="+String(act)+"\n");
-        tok = TOKEN("",TokenId._NO_TOKEN,fileContents,mm_pos-buffer,buffer,lineNrStart,mm_ePos+1,mm_linenr,mm_sPos+1);
+        tok := TOKEN(fileNm,TokenId._NO_TOKEN,fileContents,mm_pos-buffer,buffer,lineNrStart,mm_ePos+1,mm_linenr,mm_sPos+1);
         print(printToken(tok));
       then fail();
   end match;
@@ -83,7 +87,7 @@ end action;
 
 uniontype Token
   record TOKEN
-    String name;
+    String fileName;
     TokenId id;
     String fileContents;
     Integer byteOffset,length;
@@ -94,18 +98,19 @@ uniontype Token
   end TOKEN;
 end Token;
 
-constant Token noToken = TOKEN("",TokenId._NO_TOKEN,"",0,0,0,0,0,0);
+constant Token noToken = TOKEN("<NoFile>",TokenId._NO_TOKEN,"",0,0,0,0,0,0);
 
 function printToken
   input Token token;
   output String strTk;
 protected
-  String tokName,contents;
-  Integer lns,cns,lne,cne,byteOffset,length;
+  TokenId id;
+  String contents;
+  Integer byteOffset,length;
 algorithm
-  TOKEN(name=tokName,lineNumberStart=lns,columnNumberStart=cns,lineNumberEnd=lne,columnNumberEnd=cne,fileContents=contents,byteOffset=byteOffset,length=length) := token;
+  TOKEN(id=id, fileContents=contents, byteOffset=byteOffset, length=length) := token;
   contents := if length>0 then substring(contents,byteOffset,byteOffset+length-1) else "";
-  strTk := "[TOKEN:" + tokName + " '" +  contents + "' (" + intString(lns) + ":" + intString(cns) + "-"+ intString(lne) + ":" + intString(cne) +")]";
+  strTk := "[TOKEN:" + String(id) + " '" +  contents +"' (" + intString(token.lineNumberStart) + ":" + intString(token.columnNumberStart) + "-"+ intString(token.lineNumberEnd) + ":" + intString(token.columnNumberEnd) +")]";
 end printToken;
 
 function tokenContent
@@ -118,12 +123,22 @@ algorithm
   contents := if length>0 then substring(contents,byteOffset,byteOffset+length-1) else "";
 end tokenContent;
 
+function tokenSourceInfo
+  input Token token;
+  output SourceInfo info;
+algorithm
+  info := match t as token
+    case TOKEN() then SOURCEINFO(t.fileName, false, t.lineNumberStart, t.columnNumberStart, t.lineNumberEnd, t.columnNumberEnd, 0.0);
+  end match;
+end tokenSourceInfo;
+
 protected
 
 function lex "Scan starts the lexical analysis, load the tables and consume the program to output the tokens"
   input String fileName "input source code file";
   input String contents;
   output list<Token> tokens "return list of tokens";
+  output list<Token> errorTokens={};
 protected
   Integer startSt,numStates,i,r,cTok,cTok2,currSt,pos,sPos,ePos,linenr,contentLen,numBacktrack,buffer,lineNrStart;
   list<Integer> cProg,cProg2;
@@ -162,10 +177,11 @@ algorithm
   i := 1;
   while i <= contentLen loop
      cTok := stringGet(contents,i);
-     (tokens,numBacktrack,startSt,currSt,pos,sPos,ePos,linenr,lineNrStart,buffer,states,numStates) := consume(cTok,tokens,contents,startSt,currSt,pos,sPos,ePos,linenr,lineNrStart,buffer,states,numStates,fileName);
+     (tokens,numBacktrack,startSt,currSt,pos,sPos,ePos,linenr,lineNrStart,buffer,states,numStates,errorTokens) := consume(cTok,tokens,contents,startSt,currSt,pos,sPos,ePos,linenr,lineNrStart,buffer,states,numStates,fileName,errorTokens);
      i := i - numBacktrack + 1;
   end while;
   tokens := listReverseInPlace(tokens);
+  errorTokens := listReverseInPlace(errorTokens);
 end lex;
 
 function consume
@@ -178,6 +194,7 @@ function consume
   input array<Integer> inStates;
   input Integer inNumStates;
   input String fileName;
+  input list<Token> inErrorTokens;
   output list<Token> resToken;
   output Integer bkBuffer = 0;
   output Integer mm_startSt;
@@ -185,6 +202,7 @@ function consume
   output Integer buffer;
   output array<Integer> states;
   output Integer numStates;
+  output list<Token> errorTokens=inErrorTokens;
 protected
   Token tok;
   Integer act,buffer2;
@@ -252,7 +270,7 @@ algorithm
       print("\nFound rule: " + String(act));
     end if;
 
-    (tok,mm_startSt,buffer2) := action(act,mm_startSt,mm_currSt,mm_pos,mm_sPos,mm_ePos,mm_linenr,lineNrStart,buffer,debug,fileName,fileContents);
+    (tok,mm_startSt,buffer2,errorTokens) := action(act,mm_startSt,mm_currSt,mm_pos,mm_sPos,mm_ePos,mm_linenr,lineNrStart,buffer,debug,fileName,fileContents,errorTokens);
 
     if (debug==true) then
       print("\nDid action");

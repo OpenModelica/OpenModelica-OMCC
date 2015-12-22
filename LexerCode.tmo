@@ -123,6 +123,19 @@ algorithm
   contents := if length>0 then substring(contents,byteOffset,byteOffset+length-1) else "";
 end tokenContent;
 
+function tokenContentEq
+  input Token token1, token2;
+  output Boolean b;
+protected
+  String contents1,contents2;
+  Integer offset1,length1,offset2,length2;
+algorithm
+  TOKEN(fileContents=contents1,byteOffset=offset1,length=length1) := token1;
+  TOKEN(fileContents=contents2,byteOffset=offset2,length=length2) := token2;
+  // We do not need to know in which order to sort. If lengths differ, the tokens differ
+  b := if length1 <> length2 then false else (0 == System.strcmp_offset(contents1, offset1, length1, contents2, offset2, length2));
+end tokenContentEq;
+
 function tokenSourceInfo
   input Token token;
   output SourceInfo info;

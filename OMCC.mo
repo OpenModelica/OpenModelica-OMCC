@@ -25,7 +25,7 @@ algorithm
       equation
         {parser} = Flags.new(args);
         print("Generating FLEX grammar file lexer" + parser +".c ...\n");
-        0 = System.systemCall(OpenModelicaSettings.OPENMODELICAHOME + "/bin/flex -t -l lexer" + parser +".l > lexer" + parser +".c");
+        0 = System.systemCall(OpenModelicaSettings.OPENMODELICAHOME + "/bin/flex -8 -t -l lexer" + parser +".l > lexer" + parser +".c");
         tokens = LexerGenerator.buildTokens("lexer"+ parser +".l");
         str = LexerGenerator.genLexer("lexer"+ parser +".c", "lexer"+ parser +".l", parser, tokens=tokens);
         print("Result:" + str + "\n");

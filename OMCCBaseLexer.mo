@@ -46,9 +46,10 @@ end scan;
 
 function scanString "Scan starts the lexical analysis, load the tables and consume the program to output the tokens"
   input String fileSource "input source code file";
+  input String fileName = "<StringSource>";
   output list<Token.Token> tokens "return list of tokens";
 algorithm
-  tokens := lex("<StringSource>",fileSource);
+  tokens := lex(fileName,fileSource);
 end scanString;
 
 protected

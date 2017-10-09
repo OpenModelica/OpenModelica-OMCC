@@ -20,9 +20,10 @@ files := {
   compilerSources + "/Util/Util.mo",
   compilerSources + "/Util/StringUtil.mo",
   compilerSources + "/Util/System.mo",
+  compilerSources + "/Util/ZeroMQ.mo",
   "LexerGenerator.mo",
   "ParserGenerator.mo"};getErrorString();
-setCommandLineOptions({"+g=MetaModelica","+d=rml"});
+setCommandLineOptions({"-g=MetaModelica","-d=rml,gen"});
 res:=loadFile(files);
 if min(res) == false then
   print(getErrorString());
@@ -33,9 +34,8 @@ loadString("package OpenModelicaSettings
   constant String OPENMODELICAHOME = \""+getInstallationDirectoryPath()+"\";
 end OpenModelicaSettings;");
 // OMCC.main({"Modelica"});getErrorString();
-if not generateCode(OMCC.main) then
-  print(getErrorString());
+b := OpenModelica.Scripting.generateCode(OMCC.main);getErrorString();
+if not b then
+  print("Some error:\n");
   exit(1);
-else
-  print(getErrorString());
 end if;

@@ -138,19 +138,27 @@ print(intString(i) + " is token " + tokenName + "\n");
     resTable := cp::resTable;
     //posReturn,posKeepBuffer,posBreak
     posReturn := System.stringFind(rest,"Return ");
-    posBegin := System.stringFind(rest,"BEGIN");
+    posBegin := System.stringFind(rest,"BEGIN(");
     posKeepBuffer := System.stringFind(rest,"keepBuffer");
-    //print("\n pos:" + intString(pos) + ":" + "pos2:" + intString(pos2) + ":" + "posB:" + intString(posBegin) );
+    if debug then
+      print("  pos:" + intString(pos) + ":" + "pos2:" + intString(pos2) + ":" + "posB:" + intString(posBegin) +"\n");
+    end if;
     resTable := "\n      algorithm" :: resTable;
     if (posBegin>=0) then // starts BEGIN switch start state
       // find token
       pos := System.stringFind(rest,"(");
       pos2 := System.stringFind(rest,")");
+      if debug then
+        print("  rest:"+rest+" pos:"+String(pos)+" pos2:"+String(pos2)+"\n");
+      end if;
       cp := substring2(rest,pos+2,pos2);
+      if debug then
+        print("  substring:"+cp+"\n");
+      end if;
 
       valBegin := findValue(flexCode,cp);
       valBegin := 1+2*valBegin;
-      if (debug==true) then
+      if debug then
          print("\n BEGIN at" + intString(valBegin));
       end if;
       cp := "\n        mm_startSt := " + intString(valBegin) +";";
@@ -159,8 +167,8 @@ print(intString(i) + " is token " + tokenName + "\n");
 
     if (posKeepBuffer>=0) then // starts keepbuffer switch start state
       // print keep buffer
-      if (debug==true) then
-         print("\n keepbuffer");
+      if debug then
+         print("  keepbuffer\n");
       end if;
       cp := "\n        bufferRet := buffer;";
       resTable := cp::resTable;
@@ -183,6 +191,9 @@ print(intString(i) + " is token " + tokenName + "\n");
      //print("NONE");
      cp := "\n      then noToken;\n";
      resTable := cp::resTable;
+   end if;
+   if debug then
+     print("  success\n");
    end if;
 
   end for;

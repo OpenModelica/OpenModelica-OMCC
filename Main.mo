@@ -10,7 +10,7 @@ import RTOpts;
 import System;
 import Types;
 import OMCCTypes;
-import Flags;
+import FlagsUtil;
 import Error;
 
 public function main
@@ -31,7 +31,7 @@ algorithm
       Real tp,tl,tt;
      case args as _::_
       equation
-        {filename,grammar} = Flags.new(args);
+        {filename,grammar} = FlagsUtil.new(args);
         runparser = match grammar
           case "Modelica" then true;
           case "ModelicaLexer" then false;

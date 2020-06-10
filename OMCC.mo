@@ -7,6 +7,7 @@ import Absyn;
 import LexerGenerator;
 import ParserGenerator;
 import OpenModelicaSettings;
+import FlagsUtil;
 constant String copyright = "OMCCp v0.11.0 OpenModelica lexer and parser generator (2015)";
 
 public function main
@@ -23,7 +24,7 @@ algorithm
       Boolean result;
     case  "--lexer-only" :: args
       equation
-        {parser} = Flags.new(args);
+        {parser} = FlagsUtil.new(args);
         print("Generating FLEX grammar file lexer" + parser +".c ...\n");
         0 = System.systemCall(OpenModelicaSettings.OPENMODELICAHOME + "/bin/flex -8 -t -l lexer" + parser +".l > lexer" + parser +".c");
         tokens = LexerGenerator.buildTokens("lexer"+ parser +".l");
@@ -33,7 +34,7 @@ algorithm
       then ();
     case args as _::_
       equation
-        {parser} = Flags.new(args);
+        {parser} = FlagsUtil.new(args);
         print("Generating FLEX grammar file lexer" + parser +".c ...\n");
         0 = System.systemCall(OpenModelicaSettings.OPENMODELICAHOME + "/bin/flex -t -l lexer" + parser +".l > lexer" + parser +".c");
         print("Generating BISON grammar file parser" + parser +".c ...\n");

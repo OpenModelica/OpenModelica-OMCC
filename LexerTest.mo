@@ -5,7 +5,7 @@ import ParserModelica;
 import ParseCodeModelica;
 
 import System;
-import Flags;
+import FlagsUtil;
 import Error;
 
 public function main
@@ -26,7 +26,7 @@ algorithm
       Real tp,tl,tt;
      case args as _::_
       equation
-        {filename} = Flags.new(args);
+        {filename} = FlagsUtil.new(args);
         false=(0==stringLength(filename));
         print("Parsing Modelica with file " + filename + "\n");
         System.realtimeTick(1);
